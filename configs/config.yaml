@@ -1,0 +1,133 @@
+project:
+  name: "HAM10000_SkinLesionDetection"
+  seed: 42
+  num_classes: 7
+  class_names: ["akiec", "bcc", "bkl", "df", "mel", "nv", "vasc"]
+  class_full_names:
+    akiec: "Actinic Keratosis"
+    bcc: "Basal Cell Carcinoma"
+    bkl: "Benign Keratosis"
+    df: "Dermatofibroma"
+    mel: "Melanoma"
+    nv: "Melanocytic Nevi"
+    vasc: "Vascular Lesions"
+
+paths:
+  data_root: "dataset"
+  images_part1: "dataset/HAM10000_images_part_1"
+  images_part2: "dataset/HAM10000_images_part_2"
+  metadata: "dataset/HAM10000_metadata.csv"
+  checkpoints: "checkpoints"
+  results: "results"
+  logs: "logs"
+
+data:
+  image_size: 224
+  image_size_large: 380           # for EfficientNet-B4
+  train_split: 0.70
+  val_split: 0.15
+  test_split: 0.15
+  num_workers: 4
+  pin_memory: true
+  lesion_aware_split: true        # split by lesion_id, not image_id
+
+augmentation:
+  train:
+    random_resized_crop: true
+    horizontal_flip: 0.5
+    vertical_flip: 0.5
+    rotation: 30
+    color_jitter:
+      brightness: 0.2
+      contrast: 0.2
+      saturation: 0.2
+      hue: 0.1
+    random_erasing: 0.2
+    mixup_alpha: 0.4
+    cutmix_alpha: 1.0
+    augmix: false
+    hair_augmentation: true       # domain-specific: simulate dark hairs
+  val:
+    center_crop: true
+  normalize:
+    mean: [0.7630, 0.5456, 0.5700]  # HAM10000 dataset mean
+    std: [0.1409, 0.1526, 0.1697]   # HAM10000 dataset std
+
+training:
+  batch_size: 32
+  epochs: 50
+  early_stopping_patience: 10
+  grad_accumulation_steps: 2
+  mixed_precision: true
+  gradient_clip: 1.0
+
+  optimizer:
+    name: "AdamW"
+    lr: 1e-4
+    weight_decay: 1e-4
+    betas: [0.9, 0.999]
+
+  scheduler:
+    name: "CosineAnnealingWarmRestarts"
+    T_0: 10
+    T_mult: 2
+    eta_min: 1e-6
+    warmup_epochs: 3
+
+  loss:
+    name: "FocalLoss"         # Options: CrossEntropy, FocalLoss, LabelSmoothing, AsymmetricLoss
+    gamma: 2.0
+    alpha: null               # null = computed from class frequencies
+    label_smoothing: 0.1
+    use_class_weights: true
+
+  oversampling:
+    method: "WeightedRandomSampler"   # Options: WeightedRandomSampler, SMOTE, none
+
+models:
+  efficientnet_b4:
+    pretrained: true
+    dropout: 0.4
+    freeze_epochs: 3            # freeze backbone for N epochs, then unfreeze
+    image_size: 380
+
+  resnet50:
+    pretrained: true
+    dropout: 0.5
+    freeze_epochs: 3
+
+  densenet169:
+    pretrained: true
+    dropout: 0.4
+    freeze_epochs: 3
+
+  vit_b16:
+    pretrained: true
+    dropout: 0.1
+    image_size: 224
+    patch_size: 16
+
+  multimodal_fusion:
+    image_backbone: "efficientnet_b4"
+    metadata_features: ["age_norm", "sex_male", "sex_female", "loc_*"]
+    fusion: "late"              # Options: early, late, attention
+
+ensemble:
+  models: ["efficientnet_b4", "resnet50", "densenet169"]
+  method: "soft_voting"         # Options: soft_voting, hard_voting, stacking
+  temperature_scaling: true
+
+evaluation:
+  metrics: ["accuracy", "balanced_accuracy", "f1_macro", "f1_weighted", "auc_macro", "cohen_kappa"]
+  threshold_optimization: true
+  bootstrap_ci: true
+  n_bootstrap: 1000
+
+xai:
+  gradcam: true
+  gradcam_plus_plus: true
+  scorecam: false
+  shap: true
+  lime: true
+  integrated_gradients: true
+  n_samples_explain: 20

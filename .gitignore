@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# macOS
+.DS_Store
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Large datasets
+dataset/
+Skin_Lesion_dataset_backup/
+
+# Large model/checkpoint files
+checkpoints/
+Skin_Lesion_checkpoints_backup/
+*.pth
+*.pt
+*.ckpt
+
+# Temporary files
+*.tmp
+*.log
