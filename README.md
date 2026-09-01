@@ -148,30 +148,3 @@ Course: Masters Data Science
 Institution:SETU Carlow
 Academic Year: 2025 to 2026
 
-15. Project Documentation
-
-See:
-
-PROJECT_QA_DOCUMENT.md
-
-for the detailed project questions, methodology,
-implementation decisions, and deployment information.
-
-### One important thing in your current README
-I noticed this sentence:
-> "Require the trained checkpoints in `checkpoints/` ..."
-But we **removed `checkpoints/` from GitHub because it is 1.8 GB**.
-So your README should clearly say something like:
-> **Pre-trained model checkpoints are not included in this repository because of their large file size. The trained checkpoints can be provided separately if required.**
-Similarly, explain that the **HAM10000 dataset is not included** because it's about **2.7 GB** in your local project.
-### For your professor, I would definitely add these 5 things
-**1. Project objective**  
-What problem you're solving.
-**2. Methodology**  
-EfficientNet-B4, ViT-B/16, ResNet-50 + CBAM, DenseNet-169, ensemble, multimodal model, XAI, etc.
-**3. Actual results**  
-Your accuracy/F1/precision/recall and comparison.
-**4. How to reproduce/run it**  
-Installation → dataset/model requirements → training/evaluation → Streamlit.
-**5. Limitations + ethical statement**  
-Especially because this is a skin-lesion/medical-image project.
